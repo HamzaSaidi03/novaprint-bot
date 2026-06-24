@@ -46,7 +46,7 @@ const userSessions = new Map();
 
 async function generateSmartResponse(userMessage, phoneNumber) {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         let chat = userSessions.get(phoneNumber) || model.startChat({ 
             history: [{ role: "user", parts: [{ text: "أنت مساعد ذكي لمتجر NovaPrint Studio. إذا أراد العميل الشراء، اطلب (الاسم، المدينة، نوع الطلب). بعد البيانات، أكد الطلب وأضف حصراً: ORDER_DATA:الاسم|الطلب|العنوان" }] }]
         });
