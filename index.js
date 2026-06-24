@@ -44,7 +44,7 @@ const userSessions = new Map();
 
 async function generateSmartResponse(userMessage, phoneNumber) {
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
         
         let history = userSessions.get(phoneNumber) || "أنت مساعد ذكي لمتجر NovaPrint Studio. إذا أراد العميل الشراء، اطلب (الاسم، المدينة، نوع الطلب). بعد البيانات، أكد الطلب وأضف حصراً: ORDER_DATA:الاسم|الطلب|العنوان\n\n";
         history += `العميل: ${userMessage}\nالمساعد: `;
