@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { google } = require('googleapis');
 
 const app = express();
@@ -39,22 +38,27 @@ async function saveOrderToSheet(phone, name, order, address) {
 }
 
 // ==========================================
-// 🧠 الذكاء الاصطناعي (Gemini)
+// 🧠 الذكاء الاصطناعي (Gemini) - الاتصال المباشر
 // ==========================================
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const userSessions = new Map();
 
 async function generateSmartResponse(userMessage, phoneNumber) {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        let chat = userSessions.get(phoneNumber) || model.startChat({ 
-            history: [{ role: "user", parts: [{ text: "أنت مساعد ذكي لمتجر NovaPrint Studio. إذا أراد العميل الشراء، اطلب (الاسم، المدينة، نوع الطلب). بعد البيانات، أكد الطلب وأضف حصراً: ORDER_DATA:الاسم|الطلب|العنوان" }] }]
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        
+        let history = userSessions.get(phoneNumber) || "أنت مساعد ذكي لمتجر NovaPrint Studio. إذا أراد العميل الشراء، اطلب (الاسم، المدينة، نوع الطلب). بعد البيانات، أكد الطلب وأضف حصراً: ORDER_DATA:الاسم|الطلب|العنوان\n\n";
+        history += `العميل: ${userMessage}\nالمساعد: `;
+
+        const response = await axios.post(url, {
+            contents: [{ parts: [{ text: history }] }]
         });
-        userSessions.set(phoneNumber, chat);
-        const result = await chat.sendMessage(userMessage);
-        return result.response.text();
+        
+        const botReply = response.data.candidates[0].content.parts[0].text;
+        userSessions.set(phoneNumber, history + botReply + "\n");
+        
+        return botReply;
     } catch (error) {
-        console.error('❌ خطأ في الذكاء الاصطناعي:', error.message);
+        console.error('❌ خطأ في الذكاء الاصطناعي:', error.response ? JSON.stringify(error.response.data) : error.message);
         return "عذراً، المتجر يشهد ضغطاً حالياً، يرجى المحاولة بعد قليل.";
     }
 }
